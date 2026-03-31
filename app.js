@@ -1,9 +1,9 @@
-let currentGroup = localStorage.getItem("activeGroup") || "Petto";
+let currentGroup = localStorage.getItem("activeGroup") || "Giorno 1";
 
 // Migrazione dal vecchio formato singolo
 const _oldData = localStorage.getItem("schedaGym");
-if (_oldData && !localStorage.getItem("schedaGym_Petto")) {
-    localStorage.setItem("schedaGym_Petto", _oldData);
+if (_oldData && !localStorage.getItem("schedaGym_Giorno 1")) {
+    localStorage.setItem("schedaGym_Giorno 1", _oldData);
     localStorage.removeItem("schedaGym");
 }
 
@@ -11,36 +11,47 @@ function escHtml(str) {
     return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function aggiungiEsercizio(nome = "", serie = "", ripetizioni = "", recupero = "", carico = "") {
+function aggiungiEsercizio(nome = "", serie = "", ripetizioni = "", recupero = "", carico = "", nascosto = false) {
     const container = document.getElementById("exerciseList");
 
     const card = document.createElement("div");
     card.className = "card bg-secondary text-light mb-3 p-3";
 
     card.innerHTML = `
-        <div class="row">
-            <div class="col-md-2 py-2">
-                <input class="form-control" placeholder="Nome esercizio" value="${escHtml(nome)}">
-            </div>
-            <div class="col-md-2 py-2">
+        <div class="d-flex align-items-center gap-2 mb-2 card-header-row">
+            <input class="form-control" placeholder="Nome esercizio" value="${escHtml(nome)}">
+            <button class="btn btn-outline-light btn-sm text-nowrap toggleBtn">Nascondi</button>
+            <button class="btn btn-danger btn-sm text-nowrap removeBtn">Rimuovi</button>
+        </div>
+        <div class="row card-body-row">
+            <div class="col-6 col-md-3 py-2">
                 <input class="form-control" type="number" placeholder="Serie" value="${escHtml(serie)}">
             </div>
-            <div class="col-md-2 py-2">
-                <input class="form-control" type="number"  placeholder="Ripetizioni" value="${escHtml(ripetizioni)}">
+            <div class="col-6 col-md-3 py-2">
+                <input class="form-control" type="number" placeholder="Ripetizioni" value="${escHtml(ripetizioni)}">
             </div>
-            <div class="col-md-2 py-2">
+            <div class="col-6 col-md-3 py-2">
                 <input class="form-control" type="number" placeholder="Recupero (sec)" value="${escHtml(recupero)}">
             </div>
-            <div class="col-md-2 py-2">
+            <div class="col-6 col-md-3 py-2">
                 <input class="form-control" type="number" placeholder="Carico (kg)" value="${escHtml(carico)}">
-            </div>
-            <div class="col-md-2 py-2">
-                <button class="btn btn-danger w-100 removeBtn">Rimuovi</button>
             </div>
         </div>
     `;
 
+    if (nascosto) {
+        card.classList.add("nascosta");
+        card.querySelector(".toggleBtn").textContent = "Mostra";
+    }
+
     container.appendChild(card);
+
+    // Nascondi / Mostra
+    card.querySelector(".toggleBtn").addEventListener("click", () => {
+        const isNascosta = card.classList.toggle("nascosta");
+        card.querySelector(".toggleBtn").textContent = isNascosta ? "Mostra" : "Nascondi";
+        salvaScheda();
+    });
 
     // Rimozione
     card.querySelector(".removeBtn").addEventListener("click", () => {
@@ -70,7 +81,8 @@ function salvaScheda() {
             serie: inputs[1].value,
             ripetizioni: inputs[2].value,
             recupero: inputs[3].value,
-            carico: inputs[4].value
+            carico: inputs[4].value,
+            nascosto: card.classList.contains("nascosta")
         });
     });
 
@@ -86,7 +98,7 @@ function caricaScheda() {
     const { esercizi } = JSON.parse(data);
 
     esercizi.forEach(ex => {
-        aggiungiEsercizio(ex.nome, ex.serie, ex.ripetizioni, ex.recupero, ex.carico);
+        aggiungiEsercizio(ex.nome, ex.serie, ex.ripetizioni, ex.recupero, ex.carico, ex.nascosto || false);
     });
 }
 function selezionaGruppo(nome) {
