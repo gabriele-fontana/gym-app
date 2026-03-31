@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">  
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-dark text-light">
+
+    <div class="container-fluid">
+        <div class="row">
+
+            <!-- Sidebar -->
+            <aside id="sidebar" class="col-md-3 bg-black p-4 vh-100">
+                <h2 class="mb-4">Gruppi Muscolari</h2>
+                <ul class="list-group">
+                    <li class="list-group-item bg-dark text-light" data-group="Giorno 1">Giorno 1</li>
+                    <li class="list-group-item bg-dark text-light" data-group="Giorno 2">Giorno 2</li>
+                </ul>
+            </aside>
+
+            <!-- Contenuto principale -->
+            <main class="col-12 col-md-9 p-4 p-md-5">
+                <button class="btn btn-secondary d-md-none mb-3" id="menuToggleBtn">&#9776; Gruppi Muscolari</button>
+                <h1 class="mb-4">Scheda: <span id="currentGroupTitle">Petto</span></h1>
+
+                <button class="btn btn-primary mb-3" id="addExerciseBtn">
+                    Aggiungi esercizio
+                </button>
+
+                <div id="exerciseList"></div>
+            </main>
+
+        </div>
+    </div>
+
+    <div id="sidebarOverlay"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
