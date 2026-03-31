@@ -134,4 +134,136 @@ document.querySelectorAll(".list-group-item[data-group]").forEach(item => {
     item.addEventListener("click", () => selezionaGruppo(item.dataset.group));
 });
 
-selezionaGruppo(currentGroup);
+// --- AUTENTICAZIONE ---
+const AUTH_KEY = 'gymAppAuth';
+
+async function hashPassword(password, salt) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(salt + password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSalt() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getAuthData() {
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? JSON.parse(raw) : null;
+}
+
+function saveAuthData(username, passwordHash, salt) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ username, passwordHash, salt }));
+}
+
+function showApp() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    sessionStorage.setItem('gymLoggedIn', '1');
+    selezionaGruppo(currentGroup);
+}
+
+// Setup primo accesso
+document.getElementById('setupBtn').addEventListener('click', async () => {
+    const username = document.getElementById('setupUsername').value.trim();
+    const password = document.getElementById('setupPassword').value;
+    const confirm = document.getElementById('setupPasswordConfirm').value;
+    const errorEl = document.getElementById('setupError');
+    errorEl.textContent = '';
+
+    if (!username || !password) { errorEl.textContent = 'Compila tutti i campi.'; return; }
+    if (password !== confirm) { errorEl.textContent = 'Le password non corrispondono.'; return; }
+    if (password.length < 6) { errorEl.textContent = 'Password troppo corta (min. 6 caratteri).'; return; }
+
+    const salt = generateSalt();
+    const hash = await hashPassword(password, salt);
+    saveAuthData(username, hash, salt);
+    showApp();
+});
+
+document.getElementById('setupPasswordConfirm').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('setupBtn').click();
+});
+
+// Login
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.textContent = '';
+
+    const auth = getAuthData();
+    if (!auth) { errorEl.textContent = 'Nessun account configurato.'; return; }
+
+    const hash = await hashPassword(password, auth.salt);
+    if (username === auth.username && hash === auth.passwordHash) {
+        showApp();
+    } else {
+        errorEl.textContent = 'Username o password errati.';
+    }
+});
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// Cambio credenziali
+document.getElementById('changeCredsBtn').addEventListener('click', () => {
+    document.getElementById('changeCredsModal').style.display = 'flex';
+    chiudiSidebar();
+});
+
+document.getElementById('cancelCredsBtn').addEventListener('click', () => {
+    document.getElementById('changeCredsModal').style.display = 'none';
+    document.getElementById('changeCredsError').textContent = '';
+});
+
+document.getElementById('saveCredsBtn').addEventListener('click', async () => {
+    const currentPwd = document.getElementById('currentPassword').value;
+    const newUsername = document.getElementById('newUsername').value.trim();
+    const newPwd = document.getElementById('newPassword').value;
+    const newPwdConfirm = document.getElementById('newPasswordConfirm').value;
+    const errorEl = document.getElementById('changeCredsError');
+    errorEl.textContent = '';
+
+    const auth = getAuthData();
+    const currentHash = await hashPassword(currentPwd, auth.salt);
+    if (currentHash !== auth.passwordHash) { errorEl.textContent = 'Password attuale errata.'; return; }
+    if (!newUsername || !newPwd) { errorEl.textContent = 'Compila tutti i campi.'; return; }
+    if (newPwd !== newPwdConfirm) { errorEl.textContent = 'Le nuove password non corrispondono.'; return; }
+    if (newPwd.length < 6) { errorEl.textContent = 'Password troppo corta (min. 6 caratteri).'; return; }
+
+    const newSalt = generateSalt();
+    const newHash = await hashPassword(newPwd, newSalt);
+    saveAuthData(newUsername, newHash, newSalt);
+    document.getElementById('changeCredsModal').style.display = 'none';
+    ['currentPassword', 'newUsername', 'newPassword', 'newPasswordConfirm'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.removeItem('gymLoggedIn');
+    location.reload();
+});
+
+function initAuth() {
+    const auth = getAuthData();
+    if (sessionStorage.getItem('gymLoggedIn') === '1' && auth) {
+        showApp();
+    } else if (!auth) {
+        document.getElementById('setupSection').style.display = 'block';
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('loginOverlay').style.display = 'flex';
+    } else {
+        document.getElementById('setupSection').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('loginOverlay').style.display = 'flex';
+    }
+}
+
+initAuth();

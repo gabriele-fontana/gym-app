@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -21,6 +21,10 @@
                     <li class="list-group-item bg-dark text-light" data-group="Giorno 1">Giorno 1</li>
                     <li class="list-group-item bg-dark text-light" data-group="Giorno 2">Giorno 2</li>
                 </ul>
+                <div class="mt-4 d-flex flex-column gap-2">
+                    <button class="btn btn-outline-light btn-sm" id="changeCredsBtn">&#9881; Cambia credenziali</button>
+                    <button class="btn btn-outline-danger btn-sm" id="logoutBtn">Esci</button>
+                </div>
             </aside>
 
             <!-- Contenuto principale -->
@@ -39,6 +43,56 @@
     </div>
 
     <div id="sidebarOverlay"></div>
+
+    <!-- Login / Setup overlay -->
+    <div id="loginOverlay" class="auth-overlay" style="display:none">
+        <div class="auth-box bg-dark text-light p-4 rounded shadow">
+            <h2 class="mb-4 text-center">&#127947; Gym Planner</h2>
+
+            <div id="setupSection" style="display:none">
+                <p class="text-muted small mb-3">Primo accesso: crea le tue credenziali.</p>
+                <input type="text" id="setupUsername" class="form-control mb-2" placeholder="Username"
+                    autocomplete="username">
+                <input type="password" id="setupPassword" class="form-control mb-2" placeholder="Password"
+                    autocomplete="new-password">
+                <input type="password" id="setupPasswordConfirm" class="form-control mb-3"
+                    placeholder="Conferma password" autocomplete="new-password">
+                <button id="setupBtn" class="btn btn-primary w-100">Crea accesso</button>
+                <p id="setupError" class="text-danger small mt-2 mb-0"></p>
+            </div>
+
+            <div id="loginSection" style="display:none">
+                <input type="text" id="loginUsername" class="form-control mb-2" placeholder="Username"
+                    autocomplete="username">
+                <input type="password" id="loginPassword" class="form-control mb-3" placeholder="Password"
+                    autocomplete="current-password">
+                <button id="loginBtn" class="btn btn-primary w-100">Accedi</button>
+                <p id="loginError" class="text-danger small mt-2 mb-0"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale cambio credenziali -->
+    <div id="changeCredsModal" class="auth-overlay" style="display:none">
+        <div class="auth-box bg-dark text-light p-4 rounded shadow">
+            <h5 class="mb-3">Modifica credenziali</h5>
+            <input type="password" id="currentPassword" class="form-control mb-2" placeholder="Password attuale"
+                autocomplete="current-password">
+            <hr class="border-secondary">
+            <input type="text" id="newUsername" class="form-control mb-2" placeholder="Nuovo username"
+                autocomplete="username">
+            <input type="password" id="newPassword" class="form-control mb-2" placeholder="Nuova password"
+                autocomplete="new-password">
+            <input type="password" id="newPasswordConfirm" class="form-control mb-3"
+                placeholder="Conferma nuova password" autocomplete="new-password">
+            <div class="d-flex gap-2">
+                <button id="saveCredsBtn" class="btn btn-primary flex-fill">Salva</button>
+                <button id="cancelCredsBtn" class="btn btn-secondary flex-fill">Annulla</button>
+            </div>
+            <p id="changeCredsError" class="text-danger small mt-2 mb-0"></p>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 
