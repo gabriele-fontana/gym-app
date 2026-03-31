@@ -20,7 +20,7 @@ aside {
     color: #fff !important;
 }
 
-.nascosta .card-body-row {
+.nascosta {
     display: none;
 }
 

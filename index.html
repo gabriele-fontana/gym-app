@@ -16,7 +16,7 @@
 
             <!-- Sidebar -->
             <aside id="sidebar" class="col-md-3 bg-black p-4 vh-100">
-                <h2 class="mb-4">Gruppi Muscolari</h2>
+                <h2 class="mb-4">SCHEDE</h2>
                 <ul class="list-group">
                     <li class="list-group-item bg-dark text-light" data-group="Giorno 1">Giorno 1</li>
                     <li class="list-group-item bg-dark text-light" data-group="Giorno 2">Giorno 2</li>
@@ -29,11 +29,14 @@
 
             <!-- Contenuto principale -->
             <main class="col-12 col-md-9 p-4 p-md-5">
-                <button class="btn btn-secondary d-md-none mb-3" id="menuToggleBtn">&#9776; Gruppi Muscolari</button>
+                <button class="btn btn-secondary d-md-none mb-3" id="menuToggleBtn">&#9776; SCHEDE</button>
                 <h1 class="mb-4">Scheda: <span id="currentGroupTitle">Petto</span></h1>
 
                 <button class="btn btn-primary mb-3" id="addExerciseBtn">
                     Aggiungi esercizio
+                </button>
+                <button class="btn btn-outline-secondary mb-3" id="showHiddenBtn" style="display:none">
+                    Mostra esercizi completati
                 </button>
 
                 <div id="exerciseList"></div>

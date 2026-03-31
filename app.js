@@ -18,45 +18,55 @@ function aggiungiEsercizio(nome = "", serie = "", ripetizioni = "", recupero = "
     card.className = "card bg-secondary text-light mb-3 p-3";
 
     card.innerHTML = `
-        <div class="d-flex align-items-center gap-2 mb-2 card-header-row">
-            <input class="form-control" placeholder="Nome esercizio" value="${escHtml(nome)}">
-            <button class="btn btn-outline-light btn-sm text-nowrap toggleBtn">Nascondi</button>
-            <button class="btn btn-danger btn-sm text-nowrap removeBtn">Rimuovi</button>
-        </div>
-        <div class="row card-body-row">
-            <div class="col-6 col-md-3 py-2">
-                <input class="form-control" type="number" placeholder="Serie" value="${escHtml(serie)}">
-            </div>
-            <div class="col-6 col-md-3 py-2">
-                <input class="form-control" type="number" placeholder="Ripetizioni" value="${escHtml(ripetizioni)}">
-            </div>
-            <div class="col-6 col-md-3 py-2">
-                <input class="form-control" type="number" placeholder="Recupero (sec)" value="${escHtml(recupero)}">
-            </div>
-            <div class="col-6 col-md-3 py-2">
-                <input class="form-control" type="number" placeholder="Carico (kg)" value="${escHtml(carico)}">
-            </div>
-        </div>
+        <div class="d-flex align-items-center gap-2 mb-3 card-header-row">
+    <div class="flex-grow-1">
+        <label class="form-label small fw-bold mb-1">Nome Esercizio</label>
+        <input class="form-control fw-bold text-uppercase" placeholder="es. Panca Piana" value="${escHtml(nome)}">
+    </div>
+    <div class="align-self-end">
+        <button class="btn btn-outline-light btn-sm text-nowrap toggleBtn">Nascondi</button>
+        <button class="btn btn-danger btn-sm text-nowrap removeBtn">Rimuovi</button>
+    </div>
+</div>
+
+<div class="row card-body-row">
+    <div class="col-6 col-md-3 mb-2">
+        <label class="form-label small fw-bold mb-1">Serie</label>
+        <input class="form-control" type="number" placeholder="0" value="${escHtml(serie)}">
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <label class="form-label small fw-bold mb-1">Ripetizioni</label>
+        <input class="form-control" type="number" placeholder="0" value="${escHtml(ripetizioni)}">
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <label class="form-label small fw-bold mb-1">Recupero (s)</label>
+        <input class="form-control" type="number" placeholder="60" value="${escHtml(recupero)}">
+    </div>
+    <div class="col-6 col-md-3 mb-2">
+        <label class="form-label small fw-bold mb-1">Carico (kg)</label>
+        <input class="form-control" type="number" step="0.5" placeholder="0" value="${escHtml(carico)}">
+    </div>
+</div>
     `;
 
     if (nascosto) {
         card.classList.add("nascosta");
-        card.querySelector(".toggleBtn").textContent = "Mostra";
     }
 
     container.appendChild(card);
 
-    // Nascondi / Mostra
+    // Nascondi
     card.querySelector(".toggleBtn").addEventListener("click", () => {
-        const isNascosta = card.classList.toggle("nascosta");
-        card.querySelector(".toggleBtn").textContent = isNascosta ? "Mostra" : "Nascondi";
+        card.classList.add("nascosta");
         salvaScheda();
+        aggiornaBottoneMostra();
     });
 
     // Rimozione
     card.querySelector(".removeBtn").addEventListener("click", () => {
         card.remove();
         salvaScheda();
+        aggiornaBottoneMostra();
     });
 
     // Salvataggio automatico quando si scrive
@@ -69,6 +79,17 @@ document.getElementById("addExerciseBtn").addEventListener("click", () => {
     aggiungiEsercizio();
     salvaScheda();
 });
+
+document.getElementById("showHiddenBtn").addEventListener("click", () => {
+    document.querySelectorAll("#exerciseList .card.nascosta").forEach(c => c.classList.remove("nascosta"));
+    salvaScheda();
+    aggiornaBottoneMostra();
+});
+
+function aggiornaBottoneMostra() {
+    const hasHidden = document.querySelectorAll("#exerciseList .card.nascosta").length > 0;
+    document.getElementById("showHiddenBtn").style.display = hasHidden ? "block" : "none";
+}
 // --- SALVATAGGIO ---
 function salvaScheda() {
     const cards = document.querySelectorAll("#exerciseList .card");
@@ -100,6 +121,7 @@ function caricaScheda() {
     esercizi.forEach(ex => {
         aggiungiEsercizio(ex.nome, ex.serie, ex.ripetizioni, ex.recupero, ex.carico, ex.nascosto || false);
     });
+    aggiornaBottoneMostra();
 }
 function selezionaGruppo(nome) {
     currentGroup = nome;
