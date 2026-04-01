@@ -12,31 +12,12 @@ function escHtml(str) {
 }
 
 // --- CARDS ---
-function attachCardEvents(card) {
-    card.querySelector(".toggleBtn").addEventListener("click", () => {
-        card.classList.add("nascosta");
-        salvaScheda();
-        aggiornaBottoneMostra();
-    });
-    card.querySelector(".removeBtn").addEventListener("click", () => {
-        card.remove();
-        salvaScheda();
-        aggiornaBottoneMostra();
-    });
-}
-
-function creaCardSingolo(dati, nascosto = false) {
-    const container = document.getElementById("exerciseList");
-    const card = document.createElement("div");
-    card.className = "card bg-secondary text-light mb-3 p-3";
-    card.dataset.tipo = "single";
-    card.dataset.esercizio = JSON.stringify(dati);
-    if (nascosto) card.classList.add("nascosta");
-
-    card.innerHTML = `
+function htmlDisplaySingolo(dati) {
+    return `
         <div class="d-flex justify-content-between align-items-start mb-2">
             <h5 class="mb-0 fw-bold text-uppercase">${escHtml(dati.nome || '—')}</h5>
             <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm editBtn">✏️</button>
                 <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
                 <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
             </div>
@@ -60,24 +41,45 @@ function creaCardSingolo(dati, nascosto = false) {
             </div>
         </div>
     `;
-
-    attachCardEvents(card);
-    container.appendChild(card);
-    aggiornaBottoneMostra();
 }
 
-function creaCardSuperset(dati, nascosto = false) {
-    const container = document.getElementById("exerciseList");
-    const card = document.createElement("div");
-    card.className = "card bg-secondary text-light mb-3 p-3";
-    card.dataset.tipo = "superset";
-    card.dataset.esercizio = JSON.stringify(dati);
-    if (nascosto) card.classList.add("nascosta");
+function htmlEditSingolo(dati) {
+    return `
+        <div class="row">
+            <div class="col-12 mb-2">
+                <label class="form-label small fw-bold">Nome Esercizio</label>
+                <input class="form-control bg-dark text-light border-secondary text-uppercase edit-nome" value="${escHtml(dati.nome || '')}">
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <label class="form-label small fw-bold">Serie</label>
+                <input class="form-control bg-dark text-light border-secondary edit-serie" type="number" min="0" value="${escHtml(dati.serie || '')}">
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <label class="form-label small fw-bold">Ripetizioni</label>
+                <input class="form-control bg-dark text-light border-secondary edit-ripetizioni" type="number" min="0" value="${escHtml(dati.ripetizioni || '')}">
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <label class="form-label small fw-bold">Carico (kg)</label>
+                <input class="form-control bg-dark text-light border-secondary edit-carico" type="number" step="0.5" min="0" value="${escHtml(dati.carico || '')}">
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <label class="form-label small fw-bold">Recupero (s)</label>
+                <input class="form-control bg-dark text-light border-secondary edit-recupero" type="number" min="0" value="${escHtml(dati.recupero || '')}">
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-primary btn-sm saveEditBtn">Salva</button>
+            <button class="btn btn-outline-secondary btn-sm cancelEditBtn">Annulla</button>
+        </div>
+    `;
+}
 
-    card.innerHTML = `
+function htmlDisplaySuperset(dati) {
+    return `
         <div class="d-flex justify-content-between align-items-start mb-2">
             <span class="badge bg-primary text-light fw-bold fs-6">SUPERSET</span>
             <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm editBtn">✏️</button>
                 <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
                 <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
             </div>
@@ -123,6 +125,149 @@ function creaCardSuperset(dati, nascosto = false) {
             <span class="fw-bold">${escHtml(dati.recupero || '0')} s</span>
         </div>
     `;
+}
+
+function htmlEditSuperset(dati) {
+    return `
+        <h6 class="fw-bold mb-2">Esercizio A</h6>
+        <div class="row">
+            <div class="col-12 mb-2">
+                <label class="form-label small fw-bold">Nome</label>
+                <input class="form-control bg-dark text-light border-secondary text-uppercase edit-es1-nome" value="${escHtml(dati.es1.nome || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Serie</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es1-serie" type="number" min="0" value="${escHtml(dati.es1.serie || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Ripetizioni</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es1-ripetizioni" type="number" min="0" value="${escHtml(dati.es1.ripetizioni || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Carico (kg)</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es1-carico" type="number" step="0.5" min="0" value="${escHtml(dati.es1.carico || '')}">
+            </div>
+        </div>
+        <h6 class="fw-bold mb-2 mt-2">Esercizio B</h6>
+        <div class="row">
+            <div class="col-12 mb-2">
+                <label class="form-label small fw-bold">Nome</label>
+                <input class="form-control bg-dark text-light border-secondary text-uppercase edit-es2-nome" value="${escHtml(dati.es2.nome || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Serie</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es2-serie" type="number" min="0" value="${escHtml(dati.es2.serie || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Ripetizioni</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es2-ripetizioni" type="number" min="0" value="${escHtml(dati.es2.ripetizioni || '')}">
+            </div>
+            <div class="col-4 mb-2">
+                <label class="form-label small fw-bold">Carico (kg)</label>
+                <input class="form-control bg-dark text-light border-secondary edit-es2-carico" type="number" step="0.5" min="0" value="${escHtml(dati.es2.carico || '')}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6 col-md-3 mb-2">
+                <label class="form-label small fw-bold">Recupero (s)</label>
+                <input class="form-control bg-dark text-light border-secondary edit-recupero" type="number" min="0" value="${escHtml(dati.recupero || '')}">
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-primary btn-sm saveEditBtn">Salva</button>
+            <button class="btn btn-outline-secondary btn-sm cancelEditBtn">Annulla</button>
+        </div>
+    `;
+}
+
+function attachCardEvents(card) {
+    card.querySelector(".toggleBtn").addEventListener("click", () => {
+        card.classList.add("nascosta");
+        salvaScheda();
+        aggiornaBottoneMostra();
+    });
+    card.querySelector(".removeBtn").addEventListener("click", () => {
+        card.remove();
+        salvaScheda();
+        aggiornaBottoneMostra();
+    });
+    card.querySelector(".editBtn").addEventListener("click", () => {
+        const tipo = card.dataset.tipo;
+        const dati = JSON.parse(card.dataset.esercizio);
+        if (tipo === "single") {
+            card.innerHTML = htmlEditSingolo(dati);
+            card.querySelector(".saveEditBtn").addEventListener("click", () => {
+                const nuovi = {
+                    nome: card.querySelector(".edit-nome").value.trim(),
+                    serie: card.querySelector(".edit-serie").value,
+                    ripetizioni: card.querySelector(".edit-ripetizioni").value,
+                    carico: card.querySelector(".edit-carico").value,
+                    recupero: card.querySelector(".edit-recupero").value,
+                };
+                card.dataset.esercizio = JSON.stringify(nuovi);
+                card.innerHTML = htmlDisplaySingolo(nuovi);
+                attachCardEvents(card);
+                salvaScheda();
+            });
+            card.querySelector(".cancelEditBtn").addEventListener("click", () => {
+                card.innerHTML = htmlDisplaySingolo(dati);
+                attachCardEvents(card);
+            });
+        } else {
+            card.innerHTML = htmlEditSuperset(dati);
+            card.querySelector(".saveEditBtn").addEventListener("click", () => {
+                const nuovi = {
+                    es1: {
+                        nome: card.querySelector(".edit-es1-nome").value.trim(),
+                        serie: card.querySelector(".edit-es1-serie").value,
+                        ripetizioni: card.querySelector(".edit-es1-ripetizioni").value,
+                        carico: card.querySelector(".edit-es1-carico").value,
+                    },
+                    es2: {
+                        nome: card.querySelector(".edit-es2-nome").value.trim(),
+                        serie: card.querySelector(".edit-es2-serie").value,
+                        ripetizioni: card.querySelector(".edit-es2-ripetizioni").value,
+                        carico: card.querySelector(".edit-es2-carico").value,
+                    },
+                    recupero: card.querySelector(".edit-recupero").value,
+                };
+                card.dataset.esercizio = JSON.stringify(nuovi);
+                card.innerHTML = htmlDisplaySuperset(nuovi);
+                attachCardEvents(card);
+                salvaScheda();
+            });
+            card.querySelector(".cancelEditBtn").addEventListener("click", () => {
+                card.innerHTML = htmlDisplaySuperset(dati);
+                attachCardEvents(card);
+            });
+        }
+    });
+}
+
+function creaCardSingolo(dati, nascosto = false) {
+    const container = document.getElementById("exerciseList");
+    const card = document.createElement("div");
+    card.className = "card bg-secondary text-light mb-3 p-3";
+    card.dataset.tipo = "single";
+    card.dataset.esercizio = JSON.stringify(dati);
+    if (nascosto) card.classList.add("nascosta");
+
+    card.innerHTML = htmlDisplaySingolo(dati);
+
+    attachCardEvents(card);
+    container.appendChild(card);
+    aggiornaBottoneMostra();
+}
+
+function creaCardSuperset(dati, nascosto = false) {
+    const container = document.getElementById("exerciseList");
+    const card = document.createElement("div");
+    card.className = "card bg-secondary text-light mb-3 p-3";
+    card.dataset.tipo = "superset";
+    card.dataset.esercizio = JSON.stringify(dati);
+    if (nascosto) card.classList.add("nascosta");
+
+    card.innerHTML = htmlDisplaySuperset(dati);
 
     attachCardEvents(card);
     container.appendChild(card);
