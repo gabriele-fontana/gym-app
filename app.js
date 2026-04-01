@@ -40,6 +40,23 @@ function htmlDisplaySingolo(dati) {
                 <div class="fw-bold">${escHtml(dati.recupero || '0')} s</div>
             </div>
         </div>
+        <hr class="border-secondary mt-3 mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="form-check mb-0">
+                <input type="checkbox" class="form-check-input weightCheckbox">
+                <label class="form-check-label small text-muted">Registra peso</label>
+            </div>
+            <div class="form-check mb-0 ms-3">
+                <input type="checkbox" class="form-check-input showChartCheckbox">
+                <label class="form-check-label small text-muted">Mostra grafico</label>
+            </div>
+            <button class="btn btn-success btn-sm recordWeightBtn ms-auto" style="display:none">Record Weight</button>
+        </div>
+        <div class="card bg-dark border-secondary mt-3 p-3 chartCard" style="display:none">
+            <div class="chart-container">
+                <canvas class="weightChart"></canvas>
+            </div>
+        </div>
     `;
 }
 
@@ -124,6 +141,23 @@ function htmlDisplaySuperset(dati) {
             <span class="small text-muted">Recupero: </span>
             <span class="fw-bold">${escHtml(dati.recupero || '0')} s</span>
         </div>
+        <hr class="border-secondary mt-3 mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="form-check mb-0">
+                <input type="checkbox" class="form-check-input weightCheckbox">
+                <label class="form-check-label small text-muted">Registra peso</label>
+            </div>
+            <div class="form-check mb-0 ms-3">
+                <input type="checkbox" class="form-check-input showChartCheckbox">
+                <label class="form-check-label small text-muted">Mostra grafico</label>
+            </div>
+            <button class="btn btn-success btn-sm recordWeightBtn ms-auto" style="display:none">Record Weight</button>
+        </div>
+        <div class="card bg-dark border-secondary mt-3 p-3 chartCard" style="display:none">
+            <div class="chart-container">
+                <canvas class="weightChart"></canvas>
+            </div>
+        </div>
     `;
 }
 
@@ -207,11 +241,13 @@ function attachCardEvents(card) {
                 card.dataset.esercizio = JSON.stringify(nuovi);
                 card.innerHTML = htmlDisplaySingolo(nuovi);
                 attachCardEvents(card);
+                renderChart(card);
                 salvaScheda();
             });
             card.querySelector(".cancelEditBtn").addEventListener("click", () => {
                 card.innerHTML = htmlDisplaySingolo(dati);
                 attachCardEvents(card);
+                renderChart(card);
             });
         } else {
             card.innerHTML = htmlEditSuperset(dati);
@@ -234,42 +270,62 @@ function attachCardEvents(card) {
                 card.dataset.esercizio = JSON.stringify(nuovi);
                 card.innerHTML = htmlDisplaySuperset(nuovi);
                 attachCardEvents(card);
+                renderChart(card);
                 salvaScheda();
             });
             card.querySelector(".cancelEditBtn").addEventListener("click", () => {
                 card.innerHTML = htmlDisplaySuperset(dati);
                 attachCardEvents(card);
+                renderChart(card);
             });
         }
     });
+    const weightCheckbox = card.querySelector(".weightCheckbox");
+    const recordWeightBtn = card.querySelector(".recordWeightBtn");
+    if (weightCheckbox && recordWeightBtn) {
+        weightCheckbox.addEventListener("change", () => {
+            recordWeightBtn.style.display = weightCheckbox.checked ? "inline-block" : "none";
+        });
+        recordWeightBtn.addEventListener("click", () => {
+            openWeightModal(card.dataset.cardId);
+        });
+    }
+    const showChartCheckbox = card.querySelector(".showChartCheckbox");
+    if (showChartCheckbox) {
+        showChartCheckbox.addEventListener("change", () => syncChartVisibility(card));
+    }
 }
 
-function creaCardSingolo(dati, nascosto = false) {
+function creaCardSingolo(dati, nascosto = false, cardId = null) {
     const container = document.getElementById("exerciseList");
     const card = document.createElement("div");
     card.className = "card bg-secondary text-light mb-3 p-3";
     card.dataset.tipo = "single";
+    card.dataset.cardId = cardId || ('card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
     card.dataset.esercizio = JSON.stringify(dati);
     if (nascosto) card.classList.add("nascosta");
 
     card.innerHTML = htmlDisplaySingolo(dati);
 
     attachCardEvents(card);
+    renderChart(card);
     container.appendChild(card);
     aggiornaBottoneMostra();
 }
 
-function creaCardSuperset(dati, nascosto = false) {
+function creaCardSuperset(dati, nascosto = false, cardId = null) {
     const container = document.getElementById("exerciseList");
     const card = document.createElement("div");
     card.className = "card bg-secondary text-light mb-3 p-3";
     card.dataset.tipo = "superset";
+    card.dataset.cardId = cardId || ('card_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
     card.dataset.esercizio = JSON.stringify(dati);
     if (nascosto) card.classList.add("nascosta");
 
     card.innerHTML = htmlDisplaySuperset(dati);
 
     attachCardEvents(card);
+    renderChart(card);
     container.appendChild(card);
     aggiornaBottoneMostra();
 }
@@ -359,6 +415,7 @@ function salvaScheda() {
         const dati = JSON.parse(card.dataset.esercizio);
         esercizi.push({
             tipo: card.dataset.tipo,
+            cardId: card.dataset.cardId,
             ...dati,
             nascosto: card.classList.contains("nascosta")
         });
@@ -376,15 +433,103 @@ function caricaScheda() {
     esercizi.forEach(ex => {
         const tipo = ex.tipo || "single";
         const nascosto = ex.nascosto || false;
-        const { tipo: _t, nascosto: _n, ...dati } = ex;
+        const cardId = ex.cardId || null;
+        const { tipo: _t, nascosto: _n, cardId: _c, ...dati } = ex;
         if (tipo === "superset") {
-            creaCardSuperset(dati, nascosto);
+            creaCardSuperset(dati, nascosto, cardId);
         } else {
-            creaCardSingolo(dati, nascosto);
+            creaCardSingolo(dati, nascosto, cardId);
         }
     });
     aggiornaBottoneMostra();
 }
+
+// --- WEIGHT TRACKING ---
+function syncChartVisibility(card) {
+    const chartCard = card.querySelector(".chartCard");
+    const cb = card.querySelector(".showChartCheckbox");
+    if (!chartCard || !cb) return;
+    chartCard.style.display = (cb.checked && card.dataset.hasChartData === "true") ? "block" : "none";
+}
+
+function renderChart(card) {
+    const cardId = card.dataset.cardId;
+    if (!cardId) return;
+    const history = JSON.parse(localStorage.getItem(`weightHistory_${cardId}`) || "[]");
+    const chartCard = card.querySelector(".chartCard");
+    if (!chartCard) return;
+
+    if (history.length < 2) {
+        card.dataset.hasChartData = "false";
+        syncChartVisibility(card);
+        return;
+    }
+
+    card.dataset.hasChartData = "true";
+    const canvas = chartCard.querySelector(".weightChart");
+    if (card._chartInstance) {
+        card._chartInstance.destroy();
+        card._chartInstance = null;
+    }
+
+    card._chartInstance = new Chart(canvas, {
+        type: "line",
+        data: {
+            labels: history.map(e => e.date),
+            datasets: [{
+                label: "Peso (kg)",
+                data: history.map(e => e.weight),
+                borderColor: "#0d6efd",
+                backgroundColor: "rgba(13, 110, 253, 0.1)",
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: "#0d6efd",
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: "#adb5bd" }, grid: { color: "#333" } },
+                y: { ticks: { color: "#adb5bd" }, grid: { color: "#333" } }
+            }
+        }
+    });
+    syncChartVisibility(card);
+}
+
+let _activeWeightCardId = null;
+
+function openWeightModal(cardId) {
+    _activeWeightCardId = cardId;
+    document.getElementById("weightDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("weightValue").value = "";
+    document.getElementById("weightModal").style.display = "flex";
+}
+
+function closeWeightModal() {
+    document.getElementById("weightModal").style.display = "none";
+    _activeWeightCardId = null;
+}
+
+document.getElementById("cancelWeightBtn").addEventListener("click", closeWeightModal);
+
+document.getElementById("saveWeightBtn").addEventListener("click", () => {
+    if (!_activeWeightCardId) return;
+    const date = document.getElementById("weightDate").value;
+    const weight = parseFloat(document.getElementById("weightValue").value);
+    if (!date || isNaN(weight) || weight <= 0) return;
+
+    const key = `weightHistory_${_activeWeightCardId}`;
+    const history = JSON.parse(localStorage.getItem(key) || "[]");
+    history.push({ date, weight });
+    history.sort((a, b) => a.date.localeCompare(b.date));
+    localStorage.setItem(key, JSON.stringify(history));
+
+    const card = document.querySelector(`[data-card-id="${CSS.escape(_activeWeightCardId)}"]`);
+    if (card) renderChart(card);
+    closeWeightModal();
+});
 
 function selezionaGruppo(nome) {
     currentGroup = nome;

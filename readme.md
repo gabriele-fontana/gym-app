@@ -1,0 +1,2 @@
+i want to add a check box in every card
+when it is checked add a keep track button on the bottom of the card this button is called record weight and opens an additional form as an overlay this form has the function to record a date and associate it with the current card carico value, when there is more than one {date,carico} object i want to see a graph that shows the progress over time
