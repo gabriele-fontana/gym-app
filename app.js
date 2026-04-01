@@ -17,9 +17,9 @@ function htmlDisplaySingolo(dati) {
         <div class="d-flex justify-content-between align-items-start mb-2">
             <h5 class="mb-0 fw-bold text-uppercase">${escHtml(dati.nome || '—')}</h5>
             <div class="d-flex gap-2">
-                <button class="btn btn-outline-light btn-sm editBtn">✏️</button>
-                <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
-                <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
+            <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
+            <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
+            <button class="btn btn-sm editBtn">✏️</button>
             </div>
         </div>
         <div class="row text-center">
@@ -79,7 +79,7 @@ function htmlDisplaySuperset(dati) {
         <div class="d-flex justify-content-between align-items-start mb-2">
             <span class="badge bg-primary text-light fw-bold fs-6">SUPERSET</span>
             <div class="d-flex gap-2">
-                <button class="btn btn-outline-light btn-sm editBtn">✏️</button>
+                <button class="btn btn-sm editBtn">✏️</button>
                 <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
                 <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
             </div>
