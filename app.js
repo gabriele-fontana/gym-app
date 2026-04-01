@@ -47,7 +47,7 @@ function creaCardSingolo(dati, nascosto = false) {
                 <div class="fw-bold">${escHtml(dati.serie || '0')}</div>
             </div>
             <div class="col-3">
-                <div class="small text-muted">Ripetizioni</div>
+                <div class="small text-muted">Reps</div>
                 <div class="fw-bold">${escHtml(dati.ripetizioni || '0')}</div>
             </div>
             <div class="col-3">
@@ -90,7 +90,7 @@ function creaCardSuperset(dati, nascosto = false) {
                     <div class="fw-bold">${escHtml(dati.es1.serie || '0')}</div>
                 </div>
                 <div class="col-4">
-                    <div class="small text-muted">Ripetizioni</div>
+                    <div class="small text-muted">Reps</div>
                     <div class="fw-bold">${escHtml(dati.es1.ripetizioni || '0')}</div>
                 </div>
                 <div class="col-4">
@@ -108,7 +108,7 @@ function creaCardSuperset(dati, nascosto = false) {
                     <div class="fw-bold">${escHtml(dati.es2.serie || '0')}</div>
                 </div>
                 <div class="col-4">
-                    <div class="small text-muted">Ripetizioni</div>
+                    <div class="small text-muted">Reps</div>
                     <div class="fw-bold">${escHtml(dati.es2.ripetizioni || '0')}</div>
                 </div>
                 <div class="col-4">
