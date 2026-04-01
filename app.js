@@ -56,6 +56,9 @@ function htmlDisplaySingolo(dati) {
             <div class="chart-container">
                 <canvas class="weightChart"></canvas>
             </div>
+            <div class="text-end mt-2">
+                <button class="btn btn-outline-danger btn-sm deleteHistoryBtn">Elimina dati</button>
+            </div>
         </div>
     `;
 }
@@ -156,6 +159,9 @@ function htmlDisplaySuperset(dati) {
         <div class="card bg-dark border-secondary mt-3 p-3 chartCard" style="display:none">
             <div class="chart-container">
                 <canvas class="weightChart"></canvas>
+            </div>
+            <div class="text-end mt-2">
+                <button class="btn btn-outline-danger btn-sm deleteHistoryBtn">Elimina dati</button>
             </div>
         </div>
     `;
@@ -285,18 +291,38 @@ function attachCardEvents(card) {
     if (weightCheckbox && recordWeightBtn) {
         weightCheckbox.addEventListener("change", () => {
             recordWeightBtn.style.display = weightCheckbox.checked ? "inline-block" : "none";
+            salvaScheda();
         });
         recordWeightBtn.addEventListener("click", () => {
-            openWeightModal(card.dataset.cardId);
+            const dati = JSON.parse(card.dataset.esercizio);
+            const carico = dati.carico ?? dati.es1?.carico ?? "";
+            openWeightModal(card.dataset.cardId, carico);
         });
     }
     const showChartCheckbox = card.querySelector(".showChartCheckbox");
     if (showChartCheckbox) {
-        showChartCheckbox.addEventListener("change", () => syncChartVisibility(card));
+        showChartCheckbox.addEventListener("change", () => {
+            syncChartVisibility(card);
+            salvaScheda();
+        });
+    }
+    const deleteHistoryBtn = card.querySelector(".deleteHistoryBtn");
+    if (deleteHistoryBtn) {
+        deleteHistoryBtn.addEventListener("click", () => {
+            localStorage.removeItem(`weightHistory_${card.dataset.cardId}`);
+            if (card._chartInstance) {
+                card._chartInstance.destroy();
+                card._chartInstance = null;
+            }
+            card.dataset.hasChartData = "false";
+            syncChartVisibility(card);
+            card.querySelector(".showChartCheckbox").checked = false;
+            salvaScheda();
+        });
     }
 }
 
-function creaCardSingolo(dati, nascosto = false, cardId = null) {
+function creaCardSingolo(dati, nascosto = false, cardId = null, weightChecked = false, showChartChecked = false) {
     const container = document.getElementById("exerciseList");
     const card = document.createElement("div");
     card.className = "card bg-secondary text-light mb-3 p-3";
@@ -308,12 +334,17 @@ function creaCardSingolo(dati, nascosto = false, cardId = null) {
     card.innerHTML = htmlDisplaySingolo(dati);
 
     attachCardEvents(card);
+    if (weightChecked) {
+        card.querySelector(".weightCheckbox").checked = true;
+        card.querySelector(".recordWeightBtn").style.display = "inline-block";
+    }
+    if (showChartChecked) card.querySelector(".showChartCheckbox").checked = true;
     renderChart(card);
     container.appendChild(card);
     aggiornaBottoneMostra();
 }
 
-function creaCardSuperset(dati, nascosto = false, cardId = null) {
+function creaCardSuperset(dati, nascosto = false, cardId = null, weightChecked = false, showChartChecked = false) {
     const container = document.getElementById("exerciseList");
     const card = document.createElement("div");
     card.className = "card bg-secondary text-light mb-3 p-3";
@@ -325,6 +356,11 @@ function creaCardSuperset(dati, nascosto = false, cardId = null) {
     card.innerHTML = htmlDisplaySuperset(dati);
 
     attachCardEvents(card);
+    if (weightChecked) {
+        card.querySelector(".weightCheckbox").checked = true;
+        card.querySelector(".recordWeightBtn").style.display = "inline-block";
+    }
+    if (showChartChecked) card.querySelector(".showChartCheckbox").checked = true;
     renderChart(card);
     container.appendChild(card);
     aggiornaBottoneMostra();
@@ -408,7 +444,7 @@ function aggiornaBottoneMostra() {
 
 // --- SALVATAGGIO ---
 function salvaScheda() {
-    const cards = document.querySelectorAll("#exerciseList .card");
+    const cards = document.querySelectorAll("#exerciseList > .card");
     const esercizi = [];
 
     cards.forEach(card => {
@@ -417,7 +453,9 @@ function salvaScheda() {
             tipo: card.dataset.tipo,
             cardId: card.dataset.cardId,
             ...dati,
-            nascosto: card.classList.contains("nascosta")
+            nascosto: card.classList.contains("nascosta"),
+            weightChecked: card.querySelector(".weightCheckbox")?.checked || false,
+            showChartChecked: card.querySelector(".showChartCheckbox")?.checked || false,
         });
     });
 
@@ -434,11 +472,13 @@ function caricaScheda() {
         const tipo = ex.tipo || "single";
         const nascosto = ex.nascosto || false;
         const cardId = ex.cardId || null;
-        const { tipo: _t, nascosto: _n, cardId: _c, ...dati } = ex;
+        const weightChecked = ex.weightChecked || false;
+        const showChartChecked = ex.showChartChecked || false;
+        const { tipo: _t, nascosto: _n, cardId: _c, weightChecked: _w, showChartChecked: _s, ...dati } = ex;
         if (tipo === "superset") {
-            creaCardSuperset(dati, nascosto, cardId);
+            creaCardSuperset(dati, nascosto, cardId, weightChecked, showChartChecked);
         } else {
-            creaCardSingolo(dati, nascosto, cardId);
+            creaCardSingolo(dati, nascosto, cardId, weightChecked, showChartChecked);
         }
     });
     aggiornaBottoneMostra();
@@ -500,10 +540,10 @@ function renderChart(card) {
 
 let _activeWeightCardId = null;
 
-function openWeightModal(cardId) {
+function openWeightModal(cardId, defaultWeight = "") {
     _activeWeightCardId = cardId;
     document.getElementById("weightDate").value = new Date().toISOString().split("T")[0];
-    document.getElementById("weightValue").value = "";
+    document.getElementById("weightValue").value = defaultWeight;
     document.getElementById("weightModal").style.display = "flex";
 }
 
