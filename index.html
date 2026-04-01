@@ -31,14 +31,127 @@
             <!-- Contenuto principale -->
             <main class="col-12 col-md-9 p-4 p-md-5">
                 <button class="btn btn-secondary d-md-none mb-3" id="menuToggleBtn">&#9776; SCHEDE</button>
-                <h1 class="mb-4">Schede</h1>
+                <h1 class="mb-4">Scheda</h1>
 
                 <button class="btn btn-primary mb-3" id="addExerciseBtn">
                     Aggiungi esercizio
                 </button>
-                <button class="btn btn-outline-secondary mb-3" id="showHiddenBtn" style="display:none">
+                <button class="btn btn-secondary mb-3" id="showHiddenBtn" style="display:none">
                     Mostra esercizi completati
                 </button>
+
+                <!-- Form aggiunta esercizio -->
+                <div id="addExerciseForm" class="card bg-secondary text-light mb-4 p-3" style="display:none">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tipo di esercizio</label>
+                        <select id="exerciseTypeSelect" class="form-select bg-dark text-light border-secondary">
+                            <option value="">-- Seleziona --</option>
+                            <option value="single">Esercizio singolo</option>
+                            <option value="superset">Superset</option>
+                        </select>
+                    </div>
+
+                    <!-- Form esercizio singolo -->
+                    <div id="singleExerciseForm" style="display:none">
+                        <hr class="border-secondary">
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small fw-bold">Nome Esercizio</label>
+                                <input id="singleNome"
+                                    class="form-control bg-dark text-light border-secondary text-uppercase"
+                                    placeholder="es. Panca Piana">
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Serie</label>
+                                <input id="singleSerie" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Ripetizioni</label>
+                                <input id="singleRipetizioni" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Carico (kg)</label>
+                                <input id="singleCarico" class="form-control bg-dark text-light border-secondary"
+                                    type="number" step="0.5" placeholder="0" min="0">
+                            </div>
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Recupero (s)</label>
+                                <input id="singleRecupero" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="60" min="0">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button id="submitSingleBtn" class="btn btn-primary">Aggiungi</button>
+                            <button id="cancelFormBtn" class="btn btn-outline-secondary">Annulla</button>
+                        </div>
+                    </div>
+
+                    <!-- Form superset -->
+                    <div id="supersetExerciseForm" style="display:none">
+                        <hr class="border-secondary">
+                        <h6 class="fw-bold mb-2">Esercizio A</h6>
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small fw-bold">Nome</label>
+                                <input id="ss1Nome"
+                                    class="form-control bg-dark text-light border-secondary text-uppercase"
+                                    placeholder="es. Panca Piana">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Serie</label>
+                                <input id="ss1Serie" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Ripetizioni</label>
+                                <input id="ss1Ripetizioni" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Carico (kg)</label>
+                                <input id="ss1Carico" class="form-control bg-dark text-light border-secondary"
+                                    type="number" step="0.5" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        <h6 class="fw-bold mb-2 mt-2">Esercizio B</h6>
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small fw-bold">Nome</label>
+                                <input id="ss2Nome"
+                                    class="form-control bg-dark text-light border-secondary text-uppercase"
+                                    placeholder="es. Rematore">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Serie</label>
+                                <input id="ss2Serie" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Ripetizioni</label>
+                                <input id="ss2Ripetizioni" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="0" min="0">
+                            </div>
+                            <div class="col-4 mb-2">
+                                <label class="form-label small fw-bold">Carico (kg)</label>
+                                <input id="ss2Carico" class="form-control bg-dark text-light border-secondary"
+                                    type="number" step="0.5" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 col-md-3 mb-2">
+                                <label class="form-label small fw-bold">Recupero (s)</label>
+                                <input id="ssRecupero" class="form-control bg-dark text-light border-secondary"
+                                    type="number" placeholder="60" min="0">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button id="submitSupersetBtn" class="btn btn-primary">Aggiungi</button>
+                            <button id="cancelSupersetFormBtn" class="btn btn-outline-secondary">Annulla</button>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="exerciseList"></div>
             </main>

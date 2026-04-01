@@ -11,73 +11,187 @@ function escHtml(str) {
     return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function aggiungiEsercizio(nome = "", serie = "", ripetizioni = "", recupero = "", carico = "", nascosto = false) {
-    const container = document.getElementById("exerciseList");
-
-    const card = document.createElement("div");
-    card.className = "card bg-secondary text-light mb-3 p-3";
-
-    card.innerHTML = `
-        <div class="d-flex align-items-center gap-2 mb-3 card-header-row">
-    <div class="flex-grow-1">
-        <label class="form-label small fw-bold mb-1">Nome Esercizio</label>
-        <input class="form-control fw-bold text-uppercase" placeholder="es. Panca Piana" value="${escHtml(nome)}">
-    </div>
-    <div class="align-self-end">
-        <button class="btn btn-outline-light btn-sm text-nowrap toggleBtn">Nascondi</button>
-        <button class="btn btn-danger btn-sm text-nowrap removeBtn">Rimuovi</button>
-    </div>
-</div>
-
-<div class="row card-body-row">
-    <div class="col-6 col-md-3 mb-2">
-        <label class="form-label small fw-bold mb-1">Serie</label>
-        <input class="form-control" type="number" placeholder="0" value="${escHtml(serie)}">
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-        <label class="form-label small fw-bold mb-1">Ripetizioni</label>
-        <input class="form-control" type="number" placeholder="0" value="${escHtml(ripetizioni)}">
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-        <label class="form-label small fw-bold mb-1">Recupero (s)</label>
-        <input class="form-control" type="number" placeholder="60" value="${escHtml(recupero)}">
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-        <label class="form-label small fw-bold mb-1">Carico (kg)</label>
-        <input class="form-control" type="number" step="0.5" placeholder="0" value="${escHtml(carico)}">
-    </div>
-</div>
-    `;
-
-    if (nascosto) {
-        card.classList.add("nascosta");
-    }
-
-    container.appendChild(card);
-
-    // Nascondi
+// --- CARDS ---
+function attachCardEvents(card) {
     card.querySelector(".toggleBtn").addEventListener("click", () => {
         card.classList.add("nascosta");
         salvaScheda();
         aggiornaBottoneMostra();
     });
-
-    // Rimozione
     card.querySelector(".removeBtn").addEventListener("click", () => {
         card.remove();
         salvaScheda();
         aggiornaBottoneMostra();
     });
-
-    // Salvataggio automatico quando si scrive
-    card.querySelectorAll("input").forEach(input => {
-        input.addEventListener("input", salvaScheda);
-    });
 }
 
+function creaCardSingolo(dati, nascosto = false) {
+    const container = document.getElementById("exerciseList");
+    const card = document.createElement("div");
+    card.className = "card bg-secondary text-light mb-3 p-3";
+    card.dataset.tipo = "single";
+    card.dataset.esercizio = JSON.stringify(dati);
+    if (nascosto) card.classList.add("nascosta");
+
+    card.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="mb-0 fw-bold text-uppercase">${escHtml(dati.nome || '—')}</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
+                <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="col-3">
+                <div class="small text-muted">Serie</div>
+                <div class="fw-bold">${escHtml(dati.serie || '0')}</div>
+            </div>
+            <div class="col-3">
+                <div class="small text-muted">Ripetizioni</div>
+                <div class="fw-bold">${escHtml(dati.ripetizioni || '0')}</div>
+            </div>
+            <div class="col-3">
+                <div class="small text-muted">Carico</div>
+                <div class="fw-bold">${escHtml(dati.carico || '0')} kg</div>
+            </div>
+            <div class="col-3">
+                <div class="small text-muted">Recupero</div>
+                <div class="fw-bold">${escHtml(dati.recupero || '0')} s</div>
+            </div>
+        </div>
+    `;
+
+    attachCardEvents(card);
+    container.appendChild(card);
+    aggiornaBottoneMostra();
+}
+
+function creaCardSuperset(dati, nascosto = false) {
+    const container = document.getElementById("exerciseList");
+    const card = document.createElement("div");
+    card.className = "card bg-secondary text-light mb-3 p-3";
+    card.dataset.tipo = "superset";
+    card.dataset.esercizio = JSON.stringify(dati);
+    if (nascosto) card.classList.add("nascosta");
+
+    card.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge bg-primary text-light fw-bold fs-6">SUPERSET</span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm toggleBtn">Nascondi</button>
+                <button class="btn btn-danger btn-sm removeBtn">Rimuovi</button>
+            </div>
+        </div>
+        <div class="mb-2">
+            <div class="fw-bold text-uppercase">${escHtml(dati.es1.nome || '—')}</div>
+            <div class="row text-center mt-1">
+                <div class="col-4">
+                    <div class="small text-muted">Serie</div>
+                    <div class="fw-bold">${escHtml(dati.es1.serie || '0')}</div>
+                </div>
+                <div class="col-4">
+                    <div class="small text-muted">Ripetizioni</div>
+                    <div class="fw-bold">${escHtml(dati.es1.ripetizioni || '0')}</div>
+                </div>
+                <div class="col-4">
+                    <div class="small text-muted">Carico</div>
+                    <div class="fw-bold">${escHtml(dati.es1.carico || '0')} kg</div>
+                </div>
+            </div>
+        </div>
+        <hr class="border-secondary my-2">
+        <div class="mb-2">
+            <div class="fw-bold text-uppercase">${escHtml(dati.es2.nome || '—')}</div>
+            <div class="row text-center mt-1">
+                <div class="col-4">
+                    <div class="small text-muted">Serie</div>
+                    <div class="fw-bold">${escHtml(dati.es2.serie || '0')}</div>
+                </div>
+                <div class="col-4">
+                    <div class="small text-muted">Ripetizioni</div>
+                    <div class="fw-bold">${escHtml(dati.es2.ripetizioni || '0')}</div>
+                </div>
+                <div class="col-4">
+                    <div class="small text-muted">Carico</div>
+                    <div class="fw-bold">${escHtml(dati.es2.carico || '0')} kg</div>
+                </div>
+            </div>
+        </div>
+        <hr class="border-secondary my-2">
+        <div class="text-center">
+            <span class="small text-muted">Recupero: </span>
+            <span class="fw-bold">${escHtml(dati.recupero || '0')} s</span>
+        </div>
+    `;
+
+    attachCardEvents(card);
+    container.appendChild(card);
+    aggiornaBottoneMostra();
+}
+
+// --- FORM HANDLING ---
 document.getElementById("addExerciseBtn").addEventListener("click", () => {
-    aggiungiEsercizio();
+    const form = document.getElementById("addExerciseForm");
+    const isVisible = form.style.display !== "none";
+    form.style.display = isVisible ? "none" : "block";
+    if (isVisible) resetForm();
+});
+
+document.getElementById("exerciseTypeSelect").addEventListener("change", function () {
+    document.getElementById("singleExerciseForm").style.display = this.value === "single" ? "block" : "none";
+    document.getElementById("supersetExerciseForm").style.display = this.value === "superset" ? "block" : "none";
+});
+
+function resetForm() {
+    document.getElementById("exerciseTypeSelect").value = "";
+    document.getElementById("singleExerciseForm").style.display = "none";
+    document.getElementById("supersetExerciseForm").style.display = "none";
+    ["singleNome", "singleSerie", "singleRipetizioni", "singleCarico", "singleRecupero",
+        "ss1Nome", "ss1Serie", "ss1Ripetizioni", "ss1Carico",
+        "ss2Nome", "ss2Serie", "ss2Ripetizioni", "ss2Carico", "ssRecupero"
+    ].forEach(id => { document.getElementById(id).value = ""; });
+}
+
+function chiudiForm() {
+    document.getElementById("addExerciseForm").style.display = "none";
+    resetForm();
+}
+
+document.getElementById("cancelFormBtn").addEventListener("click", chiudiForm);
+document.getElementById("cancelSupersetFormBtn").addEventListener("click", chiudiForm);
+
+document.getElementById("submitSingleBtn").addEventListener("click", () => {
+    const dati = {
+        nome: document.getElementById("singleNome").value.trim(),
+        serie: document.getElementById("singleSerie").value,
+        ripetizioni: document.getElementById("singleRipetizioni").value,
+        carico: document.getElementById("singleCarico").value,
+        recupero: document.getElementById("singleRecupero").value,
+    };
+    creaCardSingolo(dati);
     salvaScheda();
+    chiudiForm();
+});
+
+document.getElementById("submitSupersetBtn").addEventListener("click", () => {
+    const dati = {
+        es1: {
+            nome: document.getElementById("ss1Nome").value.trim(),
+            serie: document.getElementById("ss1Serie").value,
+            ripetizioni: document.getElementById("ss1Ripetizioni").value,
+            carico: document.getElementById("ss1Carico").value,
+        },
+        es2: {
+            nome: document.getElementById("ss2Nome").value.trim(),
+            serie: document.getElementById("ss2Serie").value,
+            ripetizioni: document.getElementById("ss2Ripetizioni").value,
+            carico: document.getElementById("ss2Carico").value,
+        },
+        recupero: document.getElementById("ssRecupero").value,
+    };
+    creaCardSuperset(dati);
+    salvaScheda();
+    chiudiForm();
 });
 
 document.getElementById("showHiddenBtn").addEventListener("click", () => {
@@ -90,25 +204,22 @@ function aggiornaBottoneMostra() {
     const hasHidden = document.querySelectorAll("#exerciseList .card.nascosta").length > 0;
     document.getElementById("showHiddenBtn").style.display = hasHidden ? "block" : "none";
 }
+
 // --- SALVATAGGIO ---
 function salvaScheda() {
     const cards = document.querySelectorAll("#exerciseList .card");
     const esercizi = [];
 
     cards.forEach(card => {
-        const inputs = card.querySelectorAll("input");
+        const dati = JSON.parse(card.dataset.esercizio);
         esercizi.push({
-            nome: inputs[0].value,
-            serie: inputs[1].value,
-            ripetizioni: inputs[2].value,
-            recupero: inputs[3].value,
-            carico: inputs[4].value,
+            tipo: card.dataset.tipo,
+            ...dati,
             nascosto: card.classList.contains("nascosta")
         });
     });
 
     localStorage.setItem(`schedaGym_${currentGroup}`, JSON.stringify({ esercizi }));
-    console.log("Scheda salvata!");
 }
 
 // --- CARICAMENTO ---
@@ -117,12 +228,19 @@ function caricaScheda() {
     if (!data) return;
 
     const { esercizi } = JSON.parse(data);
-
     esercizi.forEach(ex => {
-        aggiungiEsercizio(ex.nome, ex.serie, ex.ripetizioni, ex.recupero, ex.carico, ex.nascosto || false);
+        const tipo = ex.tipo || "single";
+        const nascosto = ex.nascosto || false;
+        const { tipo: _t, nascosto: _n, ...dati } = ex;
+        if (tipo === "superset") {
+            creaCardSuperset(dati, nascosto);
+        } else {
+            creaCardSingolo(dati, nascosto);
+        }
     });
     aggiornaBottoneMostra();
 }
+
 function selezionaGruppo(nome) {
     currentGroup = nome;
     localStorage.setItem("activeGroup", nome);
@@ -135,6 +253,7 @@ function selezionaGruppo(nome) {
     if (title) title.textContent = nome;
 
     document.getElementById("exerciseList").innerHTML = "";
+    chiudiForm();
     caricaScheda();
     chiudiSidebar();
 }
